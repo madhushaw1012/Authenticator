@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SignUp</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <form>
+        <label>Name :</label>
+        <input id="fname" placeholder="Name" type="text" required
+            title="Name must be without numerics or special characters"><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required placeholder="Enter your email"><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required title="Password must be of length 8 to 20.">
+        <br><br>
+        <label for="user_type">User Type:</label>
+        <select name="user_type" id="usertype">
+            <option value="ADMIN">Admin</option>
+            <option value="USER">User</option>
+        </select><br><br>
+        <button value="register" onclick="fnRegister()">Register</button><br><br>
+    </form>
+    <form action="/login">
+        Already a member, <button value="login">Login</button>
+    </form>
+
+    <script>
+        function fnRegister() {
+            event.preventDefault();
+
+            var name = document.getElementById("fname").value;
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            var user_type = document.getElementById("usertype").value;
+            var JObject = { "name": name, "email": email, "password": password, "usertype": user_type };
+            var JSONObject = JSON.stringify(JObject);
+            console.log(JSONObject)
+
+            // Check name
+            var namePattern = new RegExp(/[a-zA-Z, ]{5,}/);
+            if (!namePattern.test($(`#fname`).val())) {
+                alert(`Name can only have alphabetical letters and of 5 or more characters`);
+                return false;
+            }
+            // Check password
+            var passwordPattern = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/);
+            if (!passwordPattern.test($(`#password`).val())) {
+                alert(`Password is invalid! Password must contain atleast 1 capital,1 lower, 1 special character and a digit and should be of 8 or more characters.`);
+                return false;
+            }
+
+            $.ajax({
+                type: "post",
+                url: "/user/register",
+                data: JSONObject,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                statusCode: {
+                    200: function (response) {
+                        console.log("Raesponse: "+response);
+                        alert("You are registered!!", response.headerName);
+                    },
+                    500: function() {
+                        alert("Server Error");
+                    },
+                    308: function() {
+                        alert("PLease login");
+                        window.location.href = "/login";
+                    }
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>
