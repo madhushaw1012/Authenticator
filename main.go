@@ -20,11 +20,14 @@ import (
 var tpl *template.Template
 
 func init() {
-	tpl = template.Must(template.ParseGlob("templates/*.html"))
+	tpl = template.Must(template.ParseGlob("./static/*.html"))
 }
 
 func main() {
+
+	// http.Handle("/static/css/", http.StripPrefix("/static/css", http.FileServer(http.Dir("./static/css"))))
 	r := mux.NewRouter()
+	r.PathPrefix("/static/css/").Handler(http.StripPrefix("/static/css", http.FileServer(http.Dir("./static/css"))))
 	r.HandleFunc("/getAll", ShowAll).Methods("GET")
 	r.HandleFunc("/", IndexRegister).Methods("GET")
 	r.HandleFunc("/login", IndexLogin).Methods("GET")

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SignUp</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.min.css"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type= "text/css" href="/static/css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="form-body">
+        <div class="form-holder">
+            <div class="form-content">
+                <div class="form-items">
+                    <h3>Welcome</h3>
+                    <p>Fill in the data below.</p>
+                    <form class="requires-validation" novalidate>
+                        <div class="col-md-12">
+                            <input class="form-control" id="fname" type="text" name="name" placeholder="Full Name"
+                                required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <input class="form-control" id= "email" type="email" name="email" placeholder="E-mail Address" required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <select name="user_type" id="usertype" class="form-select mt-3" required>
+                                <option selected disabled value="">User Type</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="USER">User</option>
+                            </select>
+                        </div>
+
+
+                        <div class="col-md-12">
+                            <input class="form-control" id= "password" type="password" name="password" placeholder="Password" required>
+                        </div>
+
+                        <div class="form-button mt-3 col-md-12">
+                            <button value="register" onclick="fnRegister()" type="submit"
+                                class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                    <form action="/login">
+                        <div class="form-button mt-3 col-md-12">
+                            <div id="ColoredText">Already registered?</div>
+                        </div>
+
+                        <div class="col-md-12 form-button mt-3">
+                            <button value="login" type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function fnRegister() {
+            event.preventDefault();
+
+            var name = document.getElementById("fname").value;
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            var user_type = document.getElementById("usertype").value;
+            var JObject = { "name": name, "email": email, "password": password, "usertype": user_type };
+            var JSONObject = JSON.stringify(JObject);
+            console.log(JSONObject)
+
+            // Check name
+            var namePattern = new RegExp(/[a-zA-Z, ]{5,}/);
+            if (!namePattern.test($(`#fname`).val())) {
+                alert(`Name can only have alphabetical letters and of 5 or more characters`);
+                return false;
+            }
+            // Check password
+            var passwordPattern = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/);
+            if (!passwordPattern.test($(`#password`).val())) {
+                alert(`Password is invalid! Password must contain atleast 1 capital,1 lower, 1 special character and a digit and should be of 8 or more characters.`);
+                return false;
+            }
+
+            $.ajax({
+                type: "post",
+                url: "/user/register",
+                data: JSONObject,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                statusCode: {
+                    200: function (response) {
+                        console.log("Raesponse: " + response);
+                        alert("You are registered!!", response.headerName);
+                    },
+                    500: function () {
+                        alert("Server Error");
+                    },
+                    308: function () {
+                        alert("PLease login");
+                        window.location.href = "/login";
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>
