@@ -96,12 +96,13 @@
                     200: function (response) {
                         console.log("Raesponse: " + response);
                         alert("You are registered!!", response.headerName);
+                        window.location.href= "/home";
                     },
                     500: function () {
                         alert("Server Error");
                     },
                     308: function () {
-                        alert("PLease login");
+                        alert("Please login");
                         window.location.href = "/login";
                     }
                 }

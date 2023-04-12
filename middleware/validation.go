@@ -46,7 +46,9 @@ func Validate(loggingUser *models.User, w http.ResponseWriter) int {
 	if user.Password != loggingUser.Password {
 		return http.StatusUnauthorized
 	}
-
+	return CreateToken(w, loggingUser)
+}
+func CreateToken(w http.ResponseWriter, loggingUser *models.User) int {
 	expirationTime := time.Now().Add(time.Minute * 5)
 	claims := &Claims{
 		Name:     loggingUser.Name,
@@ -65,7 +67,7 @@ func Validate(loggingUser *models.User, w http.ResponseWriter) int {
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
 		Value:   tokenString,
-		MaxAge:  60 * 60,
+		Path:    "/",
 		Expires: expirationTime,
 	})
 	return http.StatusOK

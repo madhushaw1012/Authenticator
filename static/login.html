@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" type= "text/css" href="/static/css/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script type="text/javascript">function preventBack(){window.history.forward();}setTimeout("preventBack()", 0);window.onunload=function (){null;};</script>
 </head>
 <body>
     <div class="form-body">
@@ -47,21 +48,6 @@
     </div>
 
     <script>
-        function shiftPage(jsonObject){
-            console.log("Shiftpage wala "+jsonObject);
-            $.ajax({
-                    type: "get",
-                    url: "/home",
-                    data: jsonObject,
-                    dataType: "json",
-                    contentType: "application/json; charset=utf-8",
-                    statusCode: {
-                        200: function(){
-                            alert("yaaaaaaaaaaaay");
-                        }
-                }
-            })
-        }
         function fnLogin() {
             event.preventDefault();
     
@@ -91,8 +77,7 @@
                 statusCode: {
                     200: function() {
                         alert("You are logged in");
-                        shiftPage(JSONObject);
-                        // window.location.href = "/home";
+                        window.location.href = "/home";
                     },
                     500: function() {
                         alert("Server Error");

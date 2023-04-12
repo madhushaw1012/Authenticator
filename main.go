@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/madhushaw1012/split-bill/database"
 	validation "github.com/madhushaw1012/split-bill/middleware"
@@ -24,10 +25,9 @@ func init() {
 }
 
 func main() {
-
-	// http.Handle("/static/css/", http.StripPrefix("/static/css", http.FileServer(http.Dir("./static/css"))))
 	r := mux.NewRouter()
 	r.PathPrefix("/static/css/").Handler(http.StripPrefix("/static/css", http.FileServer(http.Dir("./static/css"))))
+	r.PathPrefix("/static/images/").Handler(http.StripPrefix("/static/images", http.FileServer(http.Dir("./static/images"))))
 	r.HandleFunc("/getAll", ShowAll).Methods("GET")
 	r.HandleFunc("/", IndexRegister).Methods("GET")
 	r.HandleFunc("/login", IndexLogin).Methods("GET")
@@ -40,38 +40,59 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 func Home(w http.ResponseWriter, r *http.Request) {
-	// cookie, err := r.Cookie("token")
-	// if err != nil {
-	// 	fmt.Println("Bhagg yaha se ", err)
-	// 	return
-	// }
-	// if time.Since(cookie.Expires) > 0 {
-	// 	fmt.Println("Session expired")
-	// 	return
-	// }
-	currentUser := new(models.User)
-	if err := json.NewDecoder(r.Body).Decode(currentUser); err != nil {
-		fmt.Println("User theek se nhi aaya ", err)
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Println("The message")
+	tokenString, err := r.Cookie("token")
+	fmt.Println(tokenString)
+	if err != nil {
+		fmt.Println("Please login first")
+		fmt.Fprintln(w, "You are not logged in.")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	tpl.ExecuteTemplate(w, "home.html", currentUser)
+	claims := jwt.MapClaims{}
+	token, _ := jwt.ParseWithClaims(tokenString.Value, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	user := token.Claims.(jwt.MapClaims)
+	fmt.Println(user)
+	filter := bson.M{"email": user["Email"]}
+	result := col.FindOne(context.Background(), filter)
+	var u models.User
+	fmt.Println(result.Decode(u))
+	fmt.Println(u)
 
+	tpl.ExecuteTemplate(w, "index.html", u)
+	w.WriteHeader(http.StatusOK)
 }
 func IndexRegister(w http.ResponseWriter, r *http.Request) {
+	tokenString, err := r.Cookie("token")
+	fmt.Println(tokenString)
+	if err == nil {
+		Home(w, r)
+		return
+	}
 	tpl.ExecuteTemplate(w, "register.html", nil)
 }
 func IndexLogin(w http.ResponseWriter, r *http.Request) {
 	tpl.ExecuteTemplate(w, "login.html", nil)
 }
 func Logout(w http.ResponseWriter, r *http.Request) {
+	tokenString, err := r.Cookie("token")
+	fmt.Println(tokenString)
+	if err != nil {
+		fmt.Println("Please login first")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
 		Value:   "",
-		MaxAge:  0,
+		MaxAge:  -1,
 		Expires: time.Now(),
+		Path:    "/",
 	})
-	fmt.Fprintln(w, "User successfully logged out")
+	w.WriteHeader(http.StatusOK)
 }
 func Login(w http.ResponseWriter, r *http.Request) {
 	newLoginUser := new(models.User)
@@ -111,6 +132,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	//Added new user
 	insertNewUser(newRegisterUser)
+	Statuscode := validation.CreateToken(w, newRegisterUser)
+	if Statuscode != http.StatusOK {
+		fmt.Println("Some error")
+		return
+	}
 	fmt.Println("Congratulations, You are now registered.")
 	json.NewEncoder(w).Encode(newRegisterUser)
 	w.Header().Add("headerName", newRegisterUser.Name)
