@@ -65,11 +65,15 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	tpl.ExecuteTemplate(w, "index.html", u)
 	w.WriteHeader(http.StatusOK)
 }
+func AlreadyLoggedIn(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("I came here....")
+	tpl.ExecuteTemplate(w, "loading.html", nil)
+}
 func IndexRegister(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := r.Cookie("token")
-	fmt.Println(tokenString)
+	fmt.Println("From indexregister", tokenString)
 	if err == nil {
-		Home(w, r)
+		AlreadyLoggedIn(w, r)
 		return
 	}
 	tpl.ExecuteTemplate(w, "register.html", nil)
