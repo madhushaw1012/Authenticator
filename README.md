@@ -1,2 +1,3 @@
 # Authenticator
-It allows user to register themselves as new user. In case, the user already exists, it allows them to log in and creates a new session.
+The Project "Authenticator" demonstrates a user registration, login and session continuation leveraging Google's latest programming language Golang.
+It is a full stack application which also utilizes GoHTML packages to dynamically render HTML pages along with jQuery JavaScript and CSS.
